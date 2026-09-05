@@ -1,0 +1,570 @@
+﻿
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pregador Excellington</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        bibleGreen: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                            soft: '#e2f0d9',
+                            darkBg: '#0f1f14'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="h-full bg-[#e2f0d9] dark:bg-[#0f1f14] text-gray-800 dark:text-gray-100 font-sans transition-colors duration-300 flex flex-col overflow-hidden">
+
+    <!-- Modal de Alerta Customizado -->
+    <div id="customModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full shadow-2xl border border-green-200 dark:border-green-900">
+            <h3 id="modalTitle" class="text-lg font-bold text-green-800 dark:text-green-300 mb-2">Aviso</h3>
+            <p id="modalMessage" class="text-gray-600 dark:text-gray-300 mb-4 text-sm"></p>
+            <div id="modalContent" class="mb-4"></div>
+            <div class="flex justify-end space-x-2">
+                <button id="modalCloseBtn" onclick="closeModal()" class="px-4 py-2 bg-green-700 hover:bg-green-800 text-white rounded-lg text-sm font-medium transition">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cabeçalho Principal com Seletor de Abas -->
+    <header class="bg-green-800 dark:bg-green-950 text-white px-4 py-3 shadow-md flex flex-wrap items-center justify-between gap-3 shrink-0">
+        <div class="flex items-center space-x-3">
+            <div class="bg-white/10 p-2 rounded-lg">
+                <i class="fa-solid fa-dove text-xl text-green-200"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-lg leading-tight">Pregador Excellington</h1>
+                <p class="text-xs text-green-200">Bíblia ARC & Auxiliar de Pregação (Offline Ready)</p>
+            </div>
+        </div>
+
+        <!-- Abas de Navegação -->
+        <div class="flex items-center bg-green-900/60 dark:bg-green-900/80 p-1 rounded-lg border border-green-700/50 flex-wrap gap-1">
+            <button onclick="switchTab('slides')" id="tabSlidesBtn" class="px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center space-x-1.5 bg-white text-green-900 shadow">
+                <i class="fa-solid fa-person-chalkboard"></i>
+                <span>Slides</span>
+            </button>
+            <button onclick="switchTab('bible')" id="tabBibleBtn" class="px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center space-x-1.5 text-green-200 hover:text-white">
+                <i class="fa-solid fa-book-open"></i>
+                <span>Bíblia ARC</span>
+            </button>
+            <button onclick="switchTab('search')" id="tabSearchBtn" class="px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center space-x-1.5 text-green-200 hover:text-white">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <span>Pesquisa</span>
+            </button>
+        </div>
+
+        <div class="flex items-center space-x-2">
+            <button onclick="toggleDarkMode()" class="p-2 rounded-lg bg-green-700 hover:bg-green-600 transition text-sm flex items-center space-x-1" title="Alternar Visão Noturna/Normal">
+                <i id="themeIcon" class="fa-solid fa-moon"></i>
+                <span class="hidden sm:inline text-xs" id="themeText">Noturno</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Conteúdo Principal -->
+    <main class="flex-1 flex flex-col overflow-hidden relative">
+        
+        <!-- ABA 1: EDITOR E PASSADOR DE SLIDES (Inicia aberta por padrão) -->
+        <section id="viewSlides" class="flex-1 flex flex-col overflow-hidden absolute inset-0 bg-[#e2f0d9] dark:bg-[#0f1f14] transition-opacity duration-200">
+            <!-- Barra de Gerenciamento da Mensagem -->
+            <div class="bg-green-700/10 dark:bg-green-900/20 p-3 border-b border-green-300 dark:border-green-900 flex flex-wrap items-center justify-between gap-2 shrink-0">
+                <div class="flex items-center space-x-2 flex-1 max-w-md">
+                    <input type="text" id="msgTitle" placeholder="Título da Mensagem / Pregação" class="w-full bg-white dark:bg-gray-800 border border-green-300 dark:border-green-700 rounded px-3 py-1.5 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-green-600 shadow-sm" oninput="updateCurrentMeta()">
+                </div>
+                <div class="flex items-center space-x-1.5 flex-wrap gap-1">
+                    <button onclick="saveCurrentMessage()" class="px-3 py-1.5 bg-green-700 hover:bg-green-800 text-white rounded text-xs font-bold transition flex items-center space-x-1 shadow">
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        <span>Salvar</span>
+                    </button>
+                    <button onclick="openNewMessageModal()" class="px-2.5 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded text-xs font-medium transition shadow-sm">
+                        <i class="fa-solid fa-file-circle-plus mr-1"></i> Novo
+                    </button>
+                    <button onclick="openSavedMessagesModal()" class="px-2.5 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded text-xs font-medium transition shadow-sm">
+                        <i class="fa-solid fa-folder-open mr-1"></i> Salvas (<span id="savedCount">0</span>)
+                    </button>
+                    <button onclick="exportCurrentMessage()" class="px-2.5 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded text-xs font-medium transition shadow-sm" title="Exportar">
+                        <i class="fa-solid fa-file-export mr-1"></i> Exportar
+                    </button>
+                    <button onclick="triggerImportMessage()" class="px-2.5 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded text-xs font-medium transition shadow-sm" title="Importar">
+                        <i class="fa-solid fa-file-import mr-1"></i> Importar
+                    </button>
+                    <input type="file" id="importFile" class="hidden" accept=".json" onchange="importMessageFile(event)">
+                </div>
+            </div>
+
+            <!-- Área de Slides (Passador & Editor) -->
+            <div id="slideMainContainer" class="flex-1 flex flex-col p-4 overflow-hidden max-w-4xl w-full mx-auto transition-all">
+                <!-- Navegação de Slides e Ajuste de Fonte -->
+                <div id="slideToolbar" class="flex items-center justify-between mb-3 bg-green-700/10 dark:bg-green-900/20 p-2.5 rounded-lg shrink-0 border border-green-200 dark:border-green-900">
+                    <div class="flex items-center space-x-2" id="navButtonsContainer">
+                        <button onclick="prevSlide()" id="prevBtn" class="px-3 py-1.5 bg-green-700 hover:bg-green-800 text-white rounded text-xs font-bold transition flex items-center space-x-1 shadow">
+                            <i class="fa-solid fa-arrow-left"></i>
+                            <span class="hidden sm:inline">Anterior</span>
+                        </button>
+                        <span id="slideIndicator" class="text-xs font-bold px-2 text-green-900 dark:text-green-300">Slide 1 de 5</span>
+                        <button onclick="nextSlide()" id="nextBtn" class="px-3 py-1.5 bg-green-700 hover:bg-green-800 text-white rounded text-xs font-bold transition flex items-center space-x-1 shadow">
+                            <span class="hidden sm:inline">Próximo</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+
+                    <div class="flex items-center space-x-2 flex-wrap gap-1">
+                        <button onclick="toggleFullScreenSlide()" id="fsButton" class="px-2.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded text-xs font-bold transition flex items-center space-x-1" title="Tela Cheia">
+                            <i class="fa-solid fa-expand"></i>
+                            <span class="hidden sm:inline">Tela Cheia</span>
+                        </button>
+                        <div id="editControlsGroup" class="flex items-center space-x-2 flex-wrap gap-1">
+                            <div class="h-4 w-px bg-green-300 dark:bg-green-700 mx-1"></div>
+                            <button onclick="addSlide()" class="px-2.5 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded text-xs font-medium transition" title="Adicionar Slide">
+                                <i class="fa-solid fa-plus mr-1"></i> Slide
+                            </button>
+                            <button onclick="removeCurrentSlide()" class="px-2.5 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded text-xs font-medium transition" title="Excluir Slide">
+                                <i class="fa-solid fa-trash mr-1"></i> Excluir
+                            </button>
+                            <div class="h-4 w-px bg-green-300 dark:bg-green-700 mx-1"></div>
+                            <span class="text-xs font-semibold text-green-800 dark:text-green-300">Fonte:</span>
+                            <button onclick="adjustSlideFontSize(-1)" class="w-6 h-6 bg-white dark:bg-gray-800 border border-green-300 dark:border-green-700 rounded flex items-center justify-center text-xs font-bold">-</button>
+                            <span id="slideFontSizeDisplay" class="text-xs w-6 text-center font-bold">20px</span>
+                            <button onclick="adjustSlideFontSize(1)" class="w-6 h-6 bg-white dark:bg-gray-800 border border-green-300 dark:border-green-700 rounded flex items-center justify-center text-xs font-bold">+</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Editor do Slide Atual -->
+                <div class="flex-1 flex flex-col bg-white dark:bg-gray-800 border border-green-300 dark:border-green-700 rounded-xl shadow-lg p-4 overflow-hidden relative">
+                    <div class="flex justify-between items-center mb-2 pb-2 border-b border-green-100 dark:border-gray-700">
+                        <input type="text" id="slideTitleInput" placeholder="Título do Slide" class="w-full bg-transparent font-bold text-base text-green-800 dark:text-green-300 focus:outline-none" oninput="updateSlideContent()">
+                    </div>
+                    <textarea id="slideBodyInput" placeholder="Tópicos e anotações para a pregação..." class="flex-1 w-full bg-transparent resize-none focus:outline-none text-gray-800 dark:text-gray-200 leading-relaxed p-1" oninput="updateSlideContent()"></textarea>
+                </div>
+            </div>
+        </section>
+
+        <!-- ABA 2: NAVEGADOR BÍBLICO (Com Botão Buscar e Seleção Precisa ARC) -->
+        <section id="viewBible" class="flex-1 flex flex-col overflow-hidden absolute inset-0 bg-[#e2f0d9] dark:bg-[#0f1f14] transition-opacity duration-200 hidden">
+            <!-- Barra de Controles da Bíblia com Botão de Buscar -->
+            <div class="bg-green-700/10 dark:bg-green-900/20 p-3 border-b border-green-300 dark:border-green-900 flex flex-wrap items-center justify-between gap-2 shrink-0">
+                <div class="flex items-center space-x-2 flex-wrap gap-2">
+                    <select id="testamentSelect" onchange="onTestamentChange()" class="bg-white dark:bg-gray-800 border border-green-300 dark:border-green-700 rounded px-2 py-1.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-green-600">
+                        <option value="VT">Antigo Testamento</option>
+                        <option value="NT">Novo Testamento</option>
+                    </select>
+                    <select id="bookSelect" onchange="onBookChange()" class="bg-white dark:bg-gray-800 border border-green-300 dark:border-green-700 rounded px-2 py-1.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-green-600">
+                        <!-- Preenchido via JS -->
+                    </select>
+                    <select id="chapterSelect" class="bg-white dark:bg-gray-800 border border-green-300 dark:border-green-700 rounded px-2 py-1.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-green-600 w-24">
+                        <!-- Preenchido via JS -->
+                    </select>
+                    <button onclick="buscarTextoBiblico()" class="px-3.5 py-1.5 bg-green-700 hover:bg-green-800 text-white rounded text-xs font-bold transition flex items-center space-x-1 shadow">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <span>Buscar</span>
+                    </button><span id="bibleStatus" class="text-xs font-medium text-amber-700 dark:text-amber-300">Carregando Bíblia ARC...</span>
+                </div>
+                
+                <div class="flex items-center space-x-2">
+                    <span class="text-xs font-semibold text-green-800 dark:text-green-300">Fonte:</span>
+                    <button onclick="adjustBibleFontSize(-1)" class="w-7 h-7 bg-white dark:bg-gray-800 border border-green-300 dark:border-green-700 rounded flex items-center justify-center hover:bg-green-100 dark:hover:bg-gray-700 text-xs font-bold">-</button>
+                    <span id="bibleFontSizeDisplay" class="text-xs w-6 text-center font-bold">16px</span>
+                    <button onclick="adjustBibleFontSize(1)" class="w-7 h-7 bg-white dark:bg-gray-800 border border-green-300 dark:border-green-700 rounded flex items-center justify-center hover:bg-green-100 dark:hover:bg-gray-700 text-xs font-bold">+</button>
+                    <button onclick="shareSelectedVerses()" class="ml-2 px-3 py-1.5 bg-green-700 hover:bg-green-800 text-white rounded text-xs font-medium transition flex items-center space-x-1 shadow" title="Copiar Seleção">
+                        <i class="fa-solid fa-share-nodes"></i>
+                        <span class="hidden sm:inline">Copiar Seleção</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Corpo de Leitura Bíblica -->
+            <div id="bibleContainer" class="flex-1 overflow-y-auto p-6 space-y-3 select-text max-w-4xl w-full mx-auto bg-white/60 dark:bg-gray-900/60 my-2 rounded-xl shadow-sm border border-green-200 dark:border-green-900">
+                <!-- Textos injetados via JS -->
+            </div>
+            
+            <div class="bg-green-700/5 dark:bg-green-900/10 px-3 py-2 border-t border-green-200 dark:border-green-900 text-xs text-center text-green-800 dark:text-green-400 shrink-0">
+                <i class="fa-solid fa-info-circle mr-1"></i> Selecione Testamento, Livro e Capítulo, clique em <b>Buscar</b> e clique nos versículos para copiar. (ARC - João Ferreira de Almeida Revista e Corrigida)
+            </div>
+        </section>
+
+        <!-- ABA 3: PESQUISA DE VERSÍCULOS POR PALAVRA-CHAVE -->
+        <section id="viewSearch" class="flex-1 flex flex-col overflow-hidden absolute inset-0 bg-[#e2f0d9] dark:bg-[#0f1f14] transition-opacity duration-200 hidden p-4">
+            <div class="max-w-4xl w-full mx-auto flex-1 flex flex-col overflow-hidden bg-white/60 dark:bg-gray-900/60 rounded-xl shadow-sm border border-green-200 dark:border-green-900 p-4">
+                <h2 class="text-base font-bold text-green-800 dark:text-green-300 mb-2"><i class="fa-solid fa-magnifying-glass mr-2"></i> Pesquisa Bíblica por Palavra-Chave (ARC)</h2>
+                <div class="flex items-center space-x-2 mb-4">
+                    <input type="text" id="keywordInput" placeholder="Ex: amor, fé, pastor, graça, paz..." class="flex-1 bg-white dark:bg-gray-800 border border-green-300 dark:border-green-700 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-600 shadow-sm" onkeydown="if(event.key==='Enter') executarPesquisaPalavra()">
+                    <button onclick="executarPesquisaPalavra()" class="px-4 py-2 bg-green-700 hover:bg-green-800 text-white rounded text-sm font-bold transition shadow">Pesquisar</button>
+                </div>
+                <div id="searchResultsContainer" class="flex-1 overflow-y-auto space-y-2 pr-1">
+                    <p class="text-sm text-gray-500 text-center py-8">Digite uma palavra-chave acima para pesquisar em toda a Bíblia ARC.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal para Listar Mensagens Salvas -->
+    <div id="savedModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-lg w-full shadow-2xl border border-green-200 dark:border-green-900 flex flex-col max-h-[85vh]">
+            <div class="flex justify-between items-center mb-4 pb-2 border-b border-gray-200 dark:border-gray-700">
+                <h3 class="text-lg font-bold text-green-800 dark:text-green-300"><i class="fa-solid fa-folder-open mr-2"></i> Mensagens Salvas no Dispositivo</h3>
+                <button onclick="closeSavedModal()" class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div id="savedMessagesList" class="flex-1 overflow-y-auto space-y-2 mb-4 pr-1">
+                <!-- Lista de mensagens salvas via JS -->
+            </div>
+            <div class="flex justify-end">
+                <button onclick="closeSavedModal()" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg text-sm font-medium transition">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Base Oficial e Indexação Precisa da Bíblia ARC -->
+    <script>
+        const DB_NAME='pregador_excellington_bible', DB_VERSION=1, STORE_NAME='verses', BIBLE_DATA_URL='./bible_arc.json';
+        const livrosPorTestamento={VT:["Gênesis","Êxodo","Levítico","Números","Deuteronômio","Josué","Juízes","Rute","1 Samuel","2 Samuel","1 Reis","2 Reis","1 Crônicas","2 Crônicas","Esdras","Neemias","Ester","Jó","Salmos","Provérbios","Eclesiastes","Cânticos","Isaías","Jeremias","Lamentações","Ezequiel","Daniel","Oséias","Joel","Amós","Obadias","Jonas","Miqueias","Naum","Habacuque","Sofonias","Ageu","Zacarias","Malaquias"],NT:["Mateus","Marcos","Lucas","João","Atos","Romanos","1 Coríntios","2 Coríntios","Gálatas","Efésios","Filipenses","Colossenses","1 Tessalonicenses","2 Tessalonicenses","1 Timóteo","2 Timóteo","Tito","Filemom","Hebreus","Tiago","1 Pedro","2 Pedro","1 João","2 João","3 João","Judas","Apocalipse"]};
+        const estruturaBibliaARC={"Gênesis":50,"Êxodo":40,"Levítico":27,"Números":36,"Deuteronômio":34,"Josué":24,"Juízes":21,"Rute":4,"1 Samuel":31,"2 Samuel":24,"1 Reis":22,"2 Reis":25,"1 Crônicas":29,"2 Crônicas":36,"Esdras":10,"Neemias":13,"Ester":10,"Jó":42,"Salmos":150,"Provérbios":31,"Eclesiastes":12,"Cânticos":8,"Isaías":66,"Jeremias":52,"Lamentações":5,"Ezequiel":48,"Daniel":12,"Oséias":14,"Joel":3,"Amós":9,"Obadias":1,"Jonas":4,"Miqueias":7,"Naum":3,"Habacuque":3,"Sofonias":3,"Ageu":2,"Zacarias":14,"Malaquias":4,"Mateus":28,"Marcos":16,"Lucas":24,"João":21,"Atos":28,"Romanos":16,"1 Coríntios":16,"2 Coríntios":13,"Gálatas":6,"Efésios":6,"Filipenses":4,"Colossenses":4,"1 Tessalonicenses":5,"2 Tessalonicenses":3,"1 Timóteo":6,"2 Timóteo":4,"Tito":3,"Filemom":1,"Hebreus":13,"Tiago":5,"1 Pedro":5,"2 Pedro":3,"1 João":5,"2 João":1,"3 João":1,"Judas":1,"Apocalipse":22};
+        let bibleBooks=[],bibleReady=false,bibleLoading=false;
+        function normalizeText(t){return String(t||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();}
+        function openBibleDB(){return new Promise((res,rej)=>{const r=indexedDB.open(DB_NAME,DB_VERSION);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains(STORE_NAME)){const s=db.createObjectStore(STORE_NAME,{keyPath:'id'});s.createIndex('bookChapter','bookChapter',{unique:false});}};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
+        async function getBibleFromDB(){const db=await openBibleDB();return new Promise((res,rej)=>{const r=db.transaction(STORE_NAME,'readonly').objectStore(STORE_NAME).getAll();r.onsuccess=()=>res(r.result||[]);r.onerror=()=>rej(r.error);});}
+        async function saveBibleToDB(records){const db=await openBibleDB();return new Promise((res,rej)=>{const tx=db.transaction(STORE_NAME,'readwrite'),s=tx.objectStore(STORE_NAME);records.forEach(x=>s.put(x));tx.oncomplete=res;tx.onerror=()=>rej(tx.error);});}
+        async function clearBibleDB(){const db=await openBibleDB();return new Promise((res,rej)=>{const tx=db.transaction(STORE_NAME,'readwrite');tx.objectStore(STORE_NAME).clear();tx.oncomplete=res;tx.onerror=()=>rej(tx.error);});}
+        function flattenBible(books){const out=[];books.forEach(b=>(b.chapters||[]).forEach(c=>(c.verses||[]).forEach(v=>{const text=String(v.text||'');out.push({id:`${b.code}_${c.number}_${v.number}`,book:b.name,code:b.code,chapter:c.number,verse:v.number,text,bookChapter:`${b.name}|${c.number}`,searchText:normalizeText(text)});})));return out;}
+        function setBibleStatus(msg,type){const e=document.getElementById('bibleStatus');if(!e)return;e.textContent=msg;e.className='text-xs font-medium '+(type==='ready'?'text-green-800 dark:text-green-300':type==='error'?'text-red-700 dark:text-red-300':'text-amber-700 dark:text-amber-300');}
+        async function loadBible(){if(bibleLoading)return;bibleLoading=true;setBibleStatus('Carregando Bíblia ARC...','loading');try{let r=await getBibleFromDB();if(r.length>=30000){bibleBooks=r;bibleReady=true;setBibleStatus(`Bíblia ARC pronta • ${r.length.toLocaleString('pt-BR')} versículos • Offline`,'ready');return;}const response=await fetch(BIBLE_DATA_URL,{cache:'no-store'});if(!response.ok)throw Error(`HTTP ${response.status}`);const books=await response.json();r=flattenBible(books);if(r.length<30000)throw Error('Arquivo ARC incompleto');await clearBibleDB();await saveBibleToDB(r);bibleBooks=r;bibleReady=true;setBibleStatus(`Bíblia ARC carregada • ${r.length.toLocaleString('pt-BR')} versículos • Offline`,'ready');}catch(e){console.error(e);bibleReady=false;setBibleStatus('Bíblia não carregada. Verifique bible_arc.json.','error');showModal('Bíblia não carregada','O arquivo bible_arc.json precisa estar junto do aplicativo. Após a primeira carga, a Bíblia ficará armazenada no dispositivo para uso offline.');}finally{bibleLoading=false;}}
+        function initBibleSelectors(){onTestamentChange();}
+        function onTestamentChange(){const t=document.getElementById('testamentSelect').value,s=document.getElementById('bookSelect');s.innerHTML='';livrosPorTestamento[t].forEach(b=>{const o=document.createElement('option');o.value=b;o.textContent=b;s.appendChild(o);});onBookChange();}
+        function onBookChange(){const b=document.getElementById('bookSelect').value,s=document.getElementById('chapterSelect');s.innerHTML='';for(let c=1;c<=(estruturaBibliaARC[b]||1);c++){const o=document.createElement('option');o.value=c;o.textContent='Cap. '+c;s.appendChild(o);}}
+        function buscarTextoBiblico(){if(!bibleReady){showModal('Bíblia ainda não está pronta','Aguarde o carregamento da Bíblia ARC.');return;}const b=document.getElementById('bookSelect').value,c=parseInt(document.getElementById('chapterSelect').value)||1,box=document.getElementById('bibleContainer');selectedVerses.clear();box.innerHTML='';const vs=bibleBooks.filter(x=>x.book===b&&x.chapter===c).sort((a,z)=>a.verse-z.verse);if(!vs.length){box.innerHTML='<p class="text-sm text-red-600 text-center py-8">Capítulo não encontrado na Bíblia ARC.</p>';return;}vs.forEach(v=>{const p=document.createElement('div');p.className='p-2 rounded hover:bg-green-700/5 dark:hover:bg-green-900/20 cursor-pointer transition flex items-start space-x-2 verse-item';p.style.fontSize=currentBibleFontSize+'px';const n=document.createElement('span');n.className='font-bold text-green-800 dark:text-green-400 select-none text-xs mt-0.5';n.textContent=v.verse;const t=document.createElement('span');t.className='flex-1';t.textContent=v.text;const i=document.createElement('i');i.className='fa-regular fa-square text-gray-400 select-icon mt-0.5';p.append(n,t,i);p.onclick=()=>toggleVerseSelection(v.book,v.chapter,v.verse,v.text,p);box.appendChild(p);});}
+        function toggleVerseSelection(book,chapter,vNum,text,el){const key=`${book} ${chapter}:${vNum} - "${text}"`,icon=el.querySelector('.select-icon');if(selectedVerses.has(key)){selectedVerses.delete(key);el.classList.remove('bg-green-200/50','dark:bg-green-900/40');icon.className='fa-regular fa-square text-gray-400 select-icon mt-0.5';}else{selectedVerses.add(key);el.classList.add('bg-green-200/50','dark:bg-green-900/40');icon.className='fa-solid fa-square-check text-green-700 dark:text-green-400 select-icon mt-0.5';}}
+        function adjustBibleFontSize(delta){currentBibleFontSize=Math.max(12,Math.min(28,currentBibleFontSize+delta));document.getElementById('bibleFontSizeDisplay').textContent=currentBibleFontSize+'px';document.querySelectorAll('#bibleContainer > div').forEach(e=>e.style.fontSize=currentBibleFontSize+'px');}
+        function copyText(text){if(navigator.clipboard&&window.isSecureContext)return navigator.clipboard.writeText(text);return new Promise((res,rej)=>{const t=document.createElement('textarea');t.value=text;t.style.position='fixed';t.style.opacity='0';document.body.appendChild(t);t.select();try{document.execCommand('copy');res();}catch(e){rej(e);}t.remove();});}
+        function shareSelectedVerses(){if(!selectedVerses.size){showModal('Seleção Vazia','Por favor, clique em um ou mais versículos para selecioná-los antes de copiar.');return;}copyText(Array.from(selectedVerses).join('\n')+'\n(Bíblia ARC - Pregador Excellington)').then(()=>showModal('Versículos Copiados!','Os versículos selecionados foram copiados para a área de transferência.')).catch(()=>showModal('Erro','Não foi possível copiar os versículos.'));}
+        async function executarPesquisaPalavra(){const original=document.getElementById('keywordInput').value.trim(),keyword=normalizeText(original),box=document.getElementById('searchResultsContainer');if(!keyword||keyword.length<2){showModal('Aviso','Digite pelo menos 2 caracteres para pesquisar.');return;}if(!bibleReady){showModal('Bíblia ainda não está pronta','Aguarde o carregamento da Bíblia ARC.');return;}box.innerHTML='<p class="text-sm text-gray-500 text-center py-8">Pesquisando em toda a Bíblia ARC...</p>';await new Promise(r=>setTimeout(r,0));const results=bibleBooks.filter(v=>v.searchText.includes(keyword));if(!results.length){box.innerHTML=`<p class="text-sm text-gray-500 text-center py-8">Nenhum versículo encontrado para "${original}".</p>`;return;}const frag=document.createDocumentFragment();results.slice(0,200).forEach(v=>{const d=document.createElement('div');d.className='p-3 bg-white dark:bg-gray-800 rounded-lg border border-green-200 dark:border-green-900 shadow-sm';const h=document.createElement('div');h.className='flex justify-between items-center mb-1';const ref=document.createElement('span');ref.className='font-bold text-xs text-green-800 dark:text-green-300';ref.textContent=`${v.book} ${v.chapter}:${v.verse}`;const btn=document.createElement('button');btn.className='text-xs text-green-700 dark:text-green-400 hover:underline';btn.innerHTML='<i class="fa-solid fa-copy mr-1"></i> Copiar';btn.onclick=()=>copiarVersoPesquisa(`${v.book} ${v.chapter}:${v.verse} - "${v.text}"`);h.append(ref,btn);const p=document.createElement('p');p.className='text-xs text-gray-700 dark:text-gray-300';p.textContent=v.text;d.append(h,p);frag.appendChild(d);});box.innerHTML='';box.appendChild(frag);if(results.length>200){const m=document.createElement('p');m.className='text-xs text-gray-500 text-center py-3';m.textContent=`Mostrando os primeiros 200 resultados de ${results.length.toLocaleString('pt-BR')}.`;box.appendChild(m);}}
+        function copiarVersoPesquisa(texto){copyText(texto+' (ARC)').then(()=>showModal('Copiado!','Versículo copiado para a área de transferência.')).catch(()=>showModal('Erro','Não foi possível copiar o versículo.'));}
+        // Estado Global
+        let currentBibleFontSize=16,currentSlideFontSize=20,isDarkMode=false,isFullScreen=false,selectedVerses=new Set();
+        let currentMessage={id:'msg_'+Date.now(),title:'Mensagem Sem Título',slides:[{title:'Introdução',body:'Insira aqui os pontos principais da introdução...'},{title:'Desenvolvimento 1',body:'Insira o primeiro tópico central...'},{title:'Desenvolvimento 2',body:'Insira o segundo tópico central...'},{title:'Desenvolvimento 3',body:'Insira o terceiro tópico central...'},{title:'Conclusão e Apelo',body:'Conclusão da mensagem e direcionamento espiritual...'}]};
+        let currentSlideIndex=0;
+        window.onload=async function(){initBibleSelectors();renderSlide();updateSavedCount();if('serviceWorker'in navigator&&location.protocol!=='file:')navigator.serviceWorker.register('./sw.js').catch(console.warn);await loadBible();if(bibleReady)buscarTextoBiblico();};
+
+        // Navegação entre as abas do aplicativo
+        function switchTab(tab) {
+            const views = {
+                slides: document.getElementById('viewSlides'),
+                bible: document.getElementById('viewBible'),
+                search: document.getElementById('viewSearch')
+            };
+            const buttons = {
+                slides: document.getElementById('tabSlidesBtn'),
+                bible: document.getElementById('tabBibleBtn'),
+                search: document.getElementById('tabSearchBtn')
+            };
+
+            if (!views[tab]) return;
+
+            Object.values(views).forEach(view => view.classList.add('hidden'));
+            Object.values(buttons).forEach(button => {
+                button.classList.remove('bg-white', 'text-green-900', 'shadow');
+                button.classList.add('text-green-200');
+            });
+
+            views[tab].classList.remove('hidden');
+            buttons[tab].classList.remove('text-green-200');
+            buttons[tab].classList.add('bg-white', 'text-green-900', 'shadow');
+
+            // Ao abrir a Bíblia, garante que o capítulo atual seja exibido.
+            if (tab === 'bible' && bibleReady) {
+                buscarTextoBiblico();
+            }
+        }
+
+        // Funções de Slides e Pregação
+        function toggleFullScreenSlide() {
+            isFullScreen = !isFullScreen;
+            const container = document.getElementById('slideMainContainer');
+            const fsButton = document.getElementById('fsButton');
+            const editControlsGroup = document.getElementById('editControlsGroup');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+
+            if (isFullScreen) {
+                container.classList.remove('max-w-4xl', 'mx-auto', 'p-4');
+                container.classList.add('fixed', 'inset-0', 'z-40', 'bg-[#e2f0d9]', 'dark:bg-[#0f1f14]', 'p-8');
+                fsButton.innerHTML = '<i class="fa-solid fa-compress"></i><span class="hidden sm:inline">Normal</span>';
+                editControlsGroup.classList.add('hidden');
+                
+                prevBtn.classList.remove('px-3', 'py-1.5', 'text-xs');
+                prevBtn.classList.add('px-6', 'py-3', 'text-base');
+                nextBtn.classList.remove('px-3', 'py-1.5', 'text-xs');
+                nextBtn.classList.add('px-6', 'py-3', 'text-base');
+            } else {
+                container.classList.remove('fixed', 'inset-0', 'z-40', 'bg-[#e2f0d9]', 'dark:bg-[#0f1f14]', 'p-8');
+                container.classList.add('max-w-4xl', 'mx-auto', 'p-4');
+                fsButton.innerHTML = '<i class="fa-solid fa-expand"></i><span class="hidden sm:inline">Tela Cheia</span>';
+                editControlsGroup.classList.remove('hidden');
+
+                prevBtn.classList.remove('px-6', 'py-3', 'text-base');
+                prevBtn.classList.add('px-3', 'py-1.5', 'text-xs');
+                nextBtn.classList.remove('px-6', 'py-3', 'text-base');
+                nextBtn.classList.add('px-3', 'py-1.5', 'text-xs');
+            }
+        }
+
+        function toggleDarkMode() {
+            isDarkMode = !isDarkMode;
+            const htmlEl = document.documentElement;
+            const themeIcon = document.getElementById('themeIcon');
+            const themeText = document.getElementById('themeText');
+
+            if (isDarkMode) {
+                htmlEl.classList.add('dark');
+                themeIcon.className = "fa-solid fa-sun";
+                themeText.textContent = "Normal";
+            } else {
+                htmlEl.classList.remove('dark');
+                themeIcon.className = "fa-solid fa-moon";
+                themeText.textContent = "Noturno";
+            }
+        }
+
+        function renderSlide() {
+            if (!currentMessage.slides || currentMessage.slides.length === 0) {
+                currentMessage.slides = [{ title: '', body: '' }];
+            }
+            if (currentSlideIndex >= currentMessage.slides.length) {
+                currentSlideIndex = currentMessage.slides.length - 1;
+            }
+            if (currentSlideIndex < 0) currentSlideIndex = 0;
+
+            const slide = currentMessage.slides[currentSlideIndex];
+            document.getElementById('msgTitle').value = currentMessage.title || '';
+            document.getElementById('slideTitleInput').value = slide.title || '';
+            document.getElementById('slideBodyInput').value = slide.body || '';
+            document.getElementById('slideBodyInput').style.fontSize = currentSlideFontSize + 'px';
+            document.getElementById('slideFontSizeDisplay').textContent = currentSlideFontSize + 'px';
+            document.getElementById('slideIndicator').textContent = `Slide ${currentSlideIndex + 1} de ${currentMessage.slides.length}`;
+        }
+
+        function updateCurrentMeta() {
+            currentMessage.title = document.getElementById('msgTitle').value;
+        }
+
+        function updateSlideContent() {
+            if (currentMessage.slides[currentSlideIndex]) {
+                currentMessage.slides[currentSlideIndex].title = document.getElementById('slideTitleInput').value;
+                currentMessage.slides[currentSlideIndex].body = document.getElementById('slideBodyInput').value;
+            }
+        }
+
+        function nextSlide() {
+            updateSlideContent();
+            if (currentSlideIndex < currentMessage.slides.length - 1) {
+                currentSlideIndex++;
+                renderSlide();
+            }
+        }
+
+        function prevSlide() {
+            updateSlideContent();
+            if (currentSlideIndex > 0) {
+                currentSlideIndex--;
+                renderSlide();
+            }
+        }
+
+        function addSlide() {
+            updateSlideContent();
+            const newIndex = Math.max(0, currentMessage.slides.length - 1);
+            currentMessage.slides.splice(newIndex, 0, { title: 'Novo Tópico', body: 'Escreva as anotações...' });
+            currentSlideIndex = newIndex;
+            renderSlide();
+        }
+
+        function removeCurrentSlide() {
+            if (currentMessage.slides.length <= 1) {
+                showModal("Aviso", "A mensagem precisa ter pelo menos um slide.");
+                return;
+            }
+            currentMessage.slides.splice(currentSlideIndex, 1);
+            if (currentSlideIndex >= currentMessage.slides.length) {
+                currentSlideIndex = currentMessage.slides.length - 1;
+            }
+            renderSlide();
+        }
+
+        function adjustSlideFontSize(delta) {
+            currentSlideFontSize = Math.max(14, Math.min(40, currentSlideFontSize + delta));
+            document.getElementById('slideBodyInput').style.fontSize = currentSlideFontSize + 'px';
+            document.getElementById('slideFontSizeDisplay').textContent = currentSlideFontSize + 'px';
+        }
+
+        function getSavedMessages() {
+            try {
+                const data = localStorage.getItem('pregador_excellington_msgs');
+                return data ? JSON.parse(data) : [];
+            } catch(e) {
+                return [];
+            }
+        }
+
+        function saveCurrentMessage() {
+            updateSlideContent();
+            if (!currentMessage.title.trim()) {
+                currentMessage.title = "Mensagem sem título";
+            }
+
+            let saved = getSavedMessages();
+            const existingIndex = saved.findIndex(m => m.id === currentMessage.id);
+            if (existingIndex >= 0) {
+                saved[existingIndex] = currentMessage;
+            } else {
+                saved.push(currentMessage);
+            }
+
+            localStorage.setItem('pregador_excellington_msgs', JSON.stringify(saved));
+            updateSavedCount();
+            showModal("Salvo Offline", "Mensagem armazenada com sucesso no dispositivo!");
+        }
+
+        function updateSavedCount() {
+            const saved = getSavedMessages();
+            document.getElementById('savedCount').textContent = saved.length;
+        }
+
+        function openNewMessageModal() {
+            currentMessage = {
+                id: 'msg_' + Date.now(),
+                title: 'Nova Mensagem',
+                slides: [
+                    { title: 'Introdução', body: 'Insira a introdução...' },
+                    { title: 'Desenvolvimento 1', body: 'Primeiro ponto...' },
+                    { title: 'Desenvolvimento 2', body: 'Segundo ponto...' },
+                    { title: 'Desenvolvimento 3', body: 'Terceiro ponto...' },
+                    { title: 'Conclusão e Apelo', body: 'Conclusão e apelo...' }
+                ]
+            };
+            currentSlideIndex = 0;
+            renderSlide();
+            showModal("Nova Mensagem", "Criada nova estrutura com 5 slides.");
+        }
+
+        function openSavedMessagesModal() {
+            const saved = getSavedMessages();
+            const listEl = document.getElementById('savedMessagesList');
+            listEl.innerHTML = '';
+
+            if (saved.length === 0) {
+                listEl.innerHTML = '<p class="text-sm text-gray-500 text-center py-4">Nenhuma mensagem salva.</p>';
+            } else {
+                saved.forEach(msg => {
+                    const div = document.createElement('div');
+                    div.className = "flex items-center justify-between p-3 bg-green-50 dark:bg-gray-700/50 rounded-lg border border-green-200 dark:border-green-900";
+                    div.innerHTML = `
+                        <div>
+                            <h4 class="font-bold text-sm text-green-900 dark:text-green-300">${msg.title || 'Sem Título'}</h4>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">${msg.slides ? msg.slides.length : 0} slide(s)</p>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button onclick="loadSavedMessage('${msg.id}')" class="px-3 py-1 bg-green-700 hover:bg-green-800 text-white rounded text-xs font-medium transition">Carregar</button>
+                            <button onclick="deleteSavedMessage('${msg.id}')" class="px-2 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-xs font-medium transition"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    `;
+                    listEl.appendChild(div);
+                });
+            }
+            document.getElementById('savedModal').classList.remove('hidden');
+        }
+
+        function closeSavedModal() {
+            document.getElementById('savedModal').classList.add('hidden');
+        }
+
+        function loadSavedMessage(id) {
+            const saved = getSavedMessages();
+            const found = saved.find(m => m.id === id);
+            if (found) {
+                currentMessage = JSON.parse(JSON.stringify(found));
+                currentSlideIndex = 0;
+                renderSlide();
+                closeSavedModal();
+                showModal("Carregada", `Mensagem "${currentMessage.title}" carregada!`);
+            }
+        }
+
+        function deleteSavedMessage(id) {
+            let saved = getSavedMessages();
+            saved = saved.filter(m => m.id !== id);
+            localStorage.setItem('pregador_excellington_msgs', JSON.stringify(saved));
+            updateSavedCount();
+            openSavedMessagesModal();
+        }
+
+        function exportCurrentMessage() {
+            updateSlideContent();
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(currentMessage, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", (currentMessage.title || 'pregação').replace(/[^a-z0-9]/gi, '_').toLowerCase() + ".json");
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        function triggerImportMessage() {
+            document.getElementById('importFile').click();
+        }
+
+        function importMessageFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (imported.slides && Array.isArray(imported.slides)) {
+                        currentMessage = imported;
+                        currentMessage.id = 'msg_' + Date.now();
+                        currentSlideIndex = 0;
+                        renderSlide();
+                        showModal("Importação Concluída", `Mensagem "${currentMessage.title}" importada!`);
+                    } else {
+                        showModal("Erro de Formato", "Arquivo inválido.");
+                    }
+                } catch (err) {
+                    showModal("Erro", "Falha ao ler arquivo JSON.");
+                }
+                event.target.value = '';
+            };
+            reader.readAsText(file);
+        }
+
+        function showModal(title, message) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalMessage').textContent = message;
+            document.getElementById('customModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('customModal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
+```
