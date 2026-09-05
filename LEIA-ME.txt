@@ -1,0 +1,25 @@
+PREGADOR EXCELLINGTON — BÍBLIA ARC OFFLINE
+
+Conteúdo:
+- index.html — aplicativo corrigido
+- bible_arc.json — Bíblia Almeida Revista e Corrigida (ARC), 1995, fonte fornecida no pacote biblias-main
+- sw.js — suporte a cache/offline
+
+Como usar:
+1. Mantenha os três arquivos na mesma pasta.
+2. Publique a pasta em um servidor HTTPS (GitHub Pages, Render, etc.).
+3. Abra o aplicativo com Internet na primeira vez.
+4. Aguarde aparecer "Bíblia ARC carregada ... Offline".
+5. Depois disso, a leitura e a pesquisa da Bíblia ficam armazenadas no IndexedDB do dispositivo e podem funcionar sem Internet.
+
+Importante:
+O arquivo ARC fornecido no pacote identifica a tradução como "Almeida Revista e Corrigida", ano 1995, editora SBB e licença "copyright". Verifique os direitos de distribuição antes de publicar o texto integral publicamente. O repositório que forneceu os arquivos possui licença MIT para o código, mas isso não transforma automaticamente o texto bíblico ARC em conteúdo de domínio público.
+
+A pesquisa:
+- percorre todos os versículos carregados;
+- ignora acentos e diferença entre maiúsculas/minúsculas;
+- mostra até 200 resultados na tela, informando o total encontrado;
+- funciona offline depois da primeira carga.
+
+Observação:
+Abrir index.html diretamente como arquivo local (file://) não é uma forma confiável de instalar Service Worker. Para o modo offline completo, use HTTPS.
