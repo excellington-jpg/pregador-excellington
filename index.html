@@ -1,4 +1,4 @@
-﻿
+
 <!DOCTYPE html>
 <html lang="pt-BR" class="h-full">
 <head>
@@ -120,7 +120,7 @@
                             <i class="fa-solid fa-arrow-left"></i>
                             <span class="hidden sm:inline">Anterior</span>
                         </button>
-                        <span id="slideIndicator" class="text-xs font-bold px-2 text-green-900 dark:text-green-300">Slide 1 de 5</span>
+                        <span id="slideIndicator" class="text-xs font-bold px-2 text-green-900 dark:text-green-300">Slide 1 de 12</span>
                         <button onclick="nextSlide()" id="nextBtn" class="px-3 py-1.5 bg-green-700 hover:bg-green-800 text-white rounded text-xs font-bold transition flex items-center space-x-1 shadow">
                             <span class="hidden sm:inline">Próximo</span>
                             <i class="fa-solid fa-arrow-right"></i>
@@ -259,7 +259,16 @@
         function copiarVersoPesquisa(texto){copyText(texto+' (ARC)').then(()=>showModal('Copiado!','Versículo copiado para a área de transferência.')).catch(()=>showModal('Erro','Não foi possível copiar o versículo.'));}
         // Estado Global
         let currentBibleFontSize=16,currentSlideFontSize=20,isDarkMode=false,isFullScreen=false,selectedVerses=new Set();
-        let currentMessage={id:'msg_'+Date.now(),title:'Mensagem Sem Título',slides:[{title:'Introdução',body:'Insira aqui os pontos principais da introdução...'},{title:'Desenvolvimento 1',body:'Insira o primeiro tópico central...'},{title:'Desenvolvimento 2',body:'Insira o segundo tópico central...'},{title:'Desenvolvimento 3',body:'Insira o terceiro tópico central...'},{title:'Conclusão e Apelo',body:'Conclusão da mensagem e direcionamento espiritual...'}]};
+        let currentMessage={id:'msg_'+Date.now(),title:'Mensagem Sem Título',slides:[{title:'Introdução',body:'Insira aqui os pontos principais da introdução...'},{ title: 'Desenvolvimento 1', body: 'Insira o primeiro tópico central...' },
+                { title: 'Desenvolvimento 2', body: 'Insira o segundo tópico central...' },
+                { title: 'Desenvolvimento 3', body: 'Insira o terceiro tópico central...' },
+                { title: 'Desenvolvimento 4', body: 'Insira o quarto tópico central...' },
+                { title: 'Desenvolvimento 5', body: 'Insira o quinto tópico central...' },
+                { title: 'Desenvolvimento 6', body: 'Insira o sexto tópico central...' },
+                { title: 'Desenvolvimento 7', body: 'Insira o sétimo tópico central...' },
+                { title: 'Desenvolvimento 8', body: 'Insira o oitavo tópico central...' },
+                { title: 'Desenvolvimento 9', body: 'Insira o nono tópico central...' },
+                { title: 'Desenvolvimento 10', body: 'Insira o décimo tópico central...' },{title:'Conclusão e Apelo',body:'Conclusão da mensagem e direcionamento espiritual...'}]};
         let currentSlideIndex=0;
         window.onload=async function(){initBibleSelectors();renderSlide();updateSavedCount();if('serviceWorker'in navigator&&location.protocol!=='file:')navigator.serviceWorker.register('./sw.js').catch(console.warn);await loadBible();if(bibleReady)buscarTextoBiblico();};
 
@@ -452,16 +461,22 @@
                 id: 'msg_' + Date.now(),
                 title: 'Nova Mensagem',
                 slides: [
-                    { title: 'Introdução', body: 'Insira a introdução...' },
                     { title: 'Desenvolvimento 1', body: 'Primeiro ponto...' },
                     { title: 'Desenvolvimento 2', body: 'Segundo ponto...' },
                     { title: 'Desenvolvimento 3', body: 'Terceiro ponto...' },
+                    { title: 'Desenvolvimento 4', body: 'Quarto ponto...' },
+                    { title: 'Desenvolvimento 5', body: 'Quinto ponto...' },
+                    { title: 'Desenvolvimento 6', body: 'Sexto ponto...' },
+                    { title: 'Desenvolvimento 7', body: 'Sétimo ponto...' },
+                    { title: 'Desenvolvimento 8', body: 'Oitavo ponto...' },
+                    { title: 'Desenvolvimento 9', body: 'Nono ponto...' },
+                    { title: 'Desenvolvimento 10', body: 'Décimo ponto...' },
                     { title: 'Conclusão e Apelo', body: 'Conclusão e apelo...' }
                 ]
             };
             currentSlideIndex = 0;
             renderSlide();
-            showModal("Nova Mensagem", "Criada nova estrutura com 5 slides.");
+            showModal("Nova Mensagem", "Criada nova estrutura com 12 slides.");
         }
 
         function openSavedMessagesModal() {
