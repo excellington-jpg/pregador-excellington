@@ -70,7 +70,15 @@
                 <i class="fa-solid fa-magnifying-glass"></i>
                 <span>Pesquisa</span>
             </button>
+
+            <!-- Botão Sair -->
+                <button onclick="exitApp()" class="px-3.5 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 rounded-xl text-xs font-semibold transition border border-rose-500/20 flex items-center gap-1.5" title="Sair do Aplicativo">
+                    <i class="fa-solid fa-right-from-bracket"></i> Sair
+                </button>
         </div>
+
+                        
+            
 
         <div class="flex items-center space-x-2">
             <button onclick="toggleDarkMode()" class="p-2 rounded-lg bg-green-700 hover:bg-green-600 transition text-sm flex items-center space-x-1" title="Alternar Visão Noturna/Normal">
@@ -579,6 +587,20 @@
         function closeModal() {
             document.getElementById('customModal').classList.add('hidden');
         }
+
+
+        // --- FUNÇÃO BOTÃO SAIR ---
+        function exitApp() {
+            if (confirm("Deseja realmente sair e fechar o aplicativo?")) {
+                window.close();
+                setTimeout(() => {
+                    window.location.href = "about:blank";
+                }, 300);
+            }
+        }
+    
+
+        
     </script>
 </body>
 </html>
